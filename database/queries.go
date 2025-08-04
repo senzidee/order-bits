@@ -14,7 +14,13 @@ func GetAllComponents() ([]models.Component, error) {
 
 	for rows.Next() {
 		var component models.Component
-		err := rows.Scan(&component.ID, &component.Name)
+		err := rows.Scan(
+			&component.ID, &component.Name, &component.Category, &component.Value,
+			&component.Package, &component.Quantity, &component.MinQuantity,
+			&component.Location, &component.DatasheetUrl, &component.Supplier,
+			&component.SupplierCode, &component.UnitPrice, &component.Notes,
+			&component.CreatedAt, &component.UpdatedAt,
+		)
 		if err != nil {
 			return nil, err
 		}
@@ -26,7 +32,13 @@ func GetAllComponents() ([]models.Component, error) {
 
 func GetComponent(id int) (*models.Component, error) {
 	var component models.Component
-	err := db.QueryRow("SELECT * FROM components WHERE id = $1", id).Scan(&component.ID, &component.Name)
+	err := db.QueryRow("SELECT * FROM components WHERE id = ?", id).Scan(
+		&component.ID, &component.Name, &component.Category, &component.Value,
+		&component.Package, &component.Quantity, &component.MinQuantity,
+		&component.Location, &component.DatasheetUrl, &component.Supplier,
+		&component.SupplierCode, &component.UnitPrice, &component.Notes,
+		&component.CreatedAt, &component.UpdatedAt,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -34,12 +46,17 @@ func GetComponent(id int) (*models.Component, error) {
 	return &component, nil
 }
 
-func CreateComponent(name string) (*models.Component, error) {
+func CreateComponent(item models.Component) (*models.Component, error) {
 	var id int
-	err := db.QueryRow("INSERT INTO components (name) VALUES ($1) RETURNING id", name).Scan(&id)
+	err := db.QueryRow(
+		"INSERT INTO components (name, category, value, package, quantity, min_quantity, location, datasheet_url, supplier, supplier_code, unit_price, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id",
+		item.Name, item.Category, item.Value, item.Package, item.Quantity, item.MinQuantity, item.Location, item.DatasheetUrl, item.Supplier, item.SupplierCode, item.UnitPrice, item.Notes,
+	).Scan(&id)
 	if err != nil {
 		return nil, err
 	}
 
-	return &models.Component{ID: id, Name: name}, nil
+	createdComponent := item
+	createdComponent.ID = int(id)
+	return &createdComponent, nil
 }
