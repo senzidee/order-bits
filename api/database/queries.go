@@ -1,7 +1,7 @@
 package database
 
 import (
-	"order-bits/models"
+	"github.com/senzidee/order-bits/api/models"
 )
 
 func GetAllComponents() ([]models.Component, error) {
@@ -59,4 +59,25 @@ func CreateComponent(item models.Component) (*models.Component, error) {
 	createdComponent := item
 	createdComponent.ID = int(id)
 	return &createdComponent, nil
+}
+
+func DeleteComponent(id int) error {
+	_, err := db.Exec("DELETE FROM components WHERE id = ?", id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func UpdateComponent(id int, item models.Component) error {
+	_, err := db.Exec(
+		"UPDATE components SET name = ?, category = ?, value = ?, package = ?, quantity = ?, min_quantity = ?, location = ?, datasheet_url = ?, supplier = ?, supplier_code = ?, unit_price = ?, notes = ? WHERE id = ?",
+		item.Name, item.Category, item.Value, item.Package, item.Quantity, item.MinQuantity, item.Location, item.DatasheetUrl, item.Supplier, item.SupplierCode, item.UnitPrice, item.Notes, id,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

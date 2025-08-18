@@ -96,7 +96,7 @@ func executeMigration(migrationPath, migrationName string) error {
 }
 
 func runMigrations() error {
-	migrationsDir := "migrations"
+	migrationsDir := "api/migrations"
 
 	// Create migrations tracking table if it doesn't exist
 	if err := createMigrationsTable(); err != nil {

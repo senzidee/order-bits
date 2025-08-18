@@ -2,8 +2,9 @@ package handlers
 
 import (
 	"net/http"
-	"order-bits/database"
-	"order-bits/response"
+
+	"github.com/senzidee/order-bits/api/database"
+	"github.com/senzidee/order-bits/api/response"
 )
 
 // GetMigrationsStatusHandler returns the status of all executed migrations

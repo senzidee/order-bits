@@ -1,4 +1,4 @@
-module order-bits
+module github.com/senzidee/order-bits
 
 go 1.24.3
 

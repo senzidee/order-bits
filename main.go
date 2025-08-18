@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"order-bits/database"
-	"order-bits/handlers"
+	"path/filepath"
+
+	"github.com/senzidee/order-bits/api/database"
+	"github.com/senzidee/order-bits/api/handlers"
 )
 
 // Health check endpoint
@@ -20,9 +22,23 @@ func healthHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
+func mainHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	fs := http.FileServer(http.Dir("static"))
+	if r.URL.Path == "/" || "" == filepath.Ext(r.URL.Path) {
+		http.ServeFile(w, r, "static/index.html")
+		return
+	}
+	fs.ServeHTTP(w, r)
+}
+
 func setupRoutes() {
+	http.HandleFunc("/", mainHandler)
 	http.HandleFunc("/health", healthHandler)
-	http.HandleFunc("/components", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/api/components", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
 			handlers.GetComponentsHandler(w, r)
@@ -33,10 +49,21 @@ func setupRoutes() {
 		}
 	})
 
-	http.HandleFunc("/components/", handlers.GetComponentHandler)
+	http.HandleFunc("/api/components/", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			handlers.GetComponentHandler(w, r)
+		case http.MethodPut:
+			handlers.UpdateComponentHandler(w, r)
+		case http.MethodDelete:
+			handlers.DeleteComponentHandler(w, r)
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
 
 	// Admin endpoints
-	http.HandleFunc("/admin/migrations", handlers.GetMigrationsStatusHandler)
+	http.HandleFunc("/api/admin/migrations", handlers.GetMigrationsStatusHandler)
 }
 
 func main() {
