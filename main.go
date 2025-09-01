@@ -48,7 +48,14 @@ func setupRoutes() {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
 	})
-
+	http.HandleFunc("/api/components/search", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			handlers.SearchComponentsHandler(w, r)
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
 	http.HandleFunc("/api/components/", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
@@ -83,9 +90,12 @@ func main() {
 	fmt.Printf("Server starting on port %s\n", port)
 	fmt.Println("Available Endpoints:")
 	fmt.Println("  GET  /health")
-	fmt.Println("  GET  /components")
-	fmt.Println("  GET  /components/{id}")
-	fmt.Println("  POST /components")
+	fmt.Println("  GET  /api/components")
+	fmt.Println("  GET  /api/components/search?term=<term>")
+	fmt.Println("  GET  /api/components/{id}")
+	fmt.Println("  POST /api/components")
+	fmt.Println("  PUT  /api/components/{id}")
+	fmt.Println("  DELETE /api/components/{id}")
 
 	log.Fatal(http.ListenAndServe(port, nil))
 }

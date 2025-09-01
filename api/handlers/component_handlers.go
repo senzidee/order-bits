@@ -12,10 +12,6 @@ import (
 )
 
 func GetComponentHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
 	path := strings.TrimPrefix(r.URL.Path, "/api/components/")
 	if path == "" {
 		http.Error(w, "Component ID required", http.StatusBadRequest)
@@ -43,11 +39,6 @@ func GetComponentHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetComponentsHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
 	components, err := database.GetAllComponents()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -57,12 +48,23 @@ func GetComponentsHandler(w http.ResponseWriter, r *http.Request) {
 	response.WriteJSONResponse(w, http.StatusOK, components)
 }
 
-func CreateComponentHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+func SearchComponentsHandler(w http.ResponseWriter, r *http.Request) {
+	term := r.URL.Query().Get("term")
+	if term == "" {
+		http.Error(w, "Term parameter required", http.StatusBadRequest)
 		return
 	}
 
+	components, err := database.SearchComponents(term)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	response.WriteJSONResponse(w, http.StatusOK, components)
+}
+
+func CreateComponentHandler(w http.ResponseWriter, r *http.Request) {
 	var component models.Component
 	err := json.NewDecoder(r.Body).Decode(&component)
 	if err != nil {
@@ -82,11 +84,6 @@ func CreateComponentHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateComponentHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPut {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
 	path := strings.TrimPrefix(r.URL.Path, "/api/components/")
 	if path == "" {
 		http.Error(w, "Component ID required", http.StatusBadRequest)
@@ -118,11 +115,6 @@ func UpdateComponentHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteComponentHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodDelete {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
 	path := strings.TrimPrefix(r.URL.Path, "/api/components/")
 	if path == "" {
 		http.Error(w, "Component ID required", http.StatusBadRequest)

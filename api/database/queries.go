@@ -46,6 +46,32 @@ func GetComponent(id int) (*models.Component, error) {
 	return &component, nil
 }
 
+func SearchComponents(term string) ([]models.Component, error) {
+	var components []models.Component
+	rows, err := db.Query("SELECT * FROM components WHERE name LIKE ? OR category LIKE ? OR value LIKE ? OR package LIKE ? OR location LIKE ? OR supplier LIKE ? OR supplier_code LIKE ? OR notes LIKE ?", "%"+term+"%", "%"+term+"%", "%"+term+"%", "%"+term+"%", "%"+term+"%", "%"+term+"%", "%"+term+"%", "%"+term+"%")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var component models.Component
+		err := rows.Scan(
+			&component.ID, &component.Name, &component.Category, &component.Value,
+			&component.Package, &component.Quantity, &component.MinQuantity,
+			&component.Location, &component.DatasheetUrl, &component.Supplier,
+			&component.SupplierCode, &component.UnitPrice, &component.Notes,
+			&component.CreatedAt, &component.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		components = append(components, component)
+	}
+
+	return components, rows.Err()
+}
+
 func CreateComponent(item models.Component) (*models.Component, error) {
 	var id int
 	err := db.QueryRow(
