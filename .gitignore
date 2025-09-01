@@ -8,6 +8,7 @@
 *.out
 *.db
 
+static/
 vendor/
 
 .vscode/
