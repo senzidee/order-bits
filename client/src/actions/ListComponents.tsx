@@ -1,10 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Component } from "../types/Component";
+import SearchInput from "../forms/SearchInput";
 
 export default function ListComponents() {
   const [components, setComponents] = useState<Component[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [searchTerm, setSearchTerm] = useState<string>("");
   const navigate = useNavigate();
 
   const longPressTimeoutRef = useRef<number | null>(null);
@@ -58,6 +60,20 @@ export default function ListComponents() {
     }
   };
 
+  const handleSearchChange = async (term: string): Promise<void> => {
+    setSearchTerm(term);
+    try {
+      setIsLoading(true);
+      const response = await fetch(`/api/components?term=${term}`);
+      const data = await response.json();
+      setComponents(data);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <section className="section">
       <div className="container">
@@ -68,6 +84,9 @@ export default function ListComponents() {
             </div>
           </div>
           <div className="level-right">
+            <div className="level-item">
+              <SearchInput term={searchTerm} onSubmit={handleSearchChange} />
+            </div>
             <div className="level-item">
               <button
                 className="button is-primary"
