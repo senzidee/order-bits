@@ -39,23 +39,13 @@ func GetComponentHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetComponentsHandler(w http.ResponseWriter, r *http.Request) {
-	components, err := database.GetAllComponents()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	response.WriteJSONResponse(w, http.StatusOK, components)
-}
-
-func SearchComponentsHandler(w http.ResponseWriter, r *http.Request) {
 	term := r.URL.Query().Get("term")
-	if term == "" {
-		http.Error(w, "Term parameter required", http.StatusBadRequest)
-		return
+	var termPtr *string
+	if term != "" {
+		termPtr = &term
 	}
 
-	components, err := database.SearchComponents(term)
+	components, err := database.GetComponents(termPtr)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
